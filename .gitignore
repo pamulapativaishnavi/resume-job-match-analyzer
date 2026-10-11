@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+ml-service/venv/
+venv/
+ENV/
+env/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyTorch / Models cache
+.cache/
+models/
+
+# VS Code / IDE
+.vscode/*
+!.vscode/settings.json
+.idea/
+
+# Environment Variables
+.env
+.env.local
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store

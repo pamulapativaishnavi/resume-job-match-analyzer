@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resume–Job Match Analyzer | AI ATS & Semantic Scoring</title>
+  <meta name="description" content="AI-powered Resume to Job Description Match Analyzer. Get ATS keyword gaps, semantic similarity scoring, and actionable resume optimization tips.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- PDF.js for client-side PDF text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Background ambient glow effects -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">ResumeMatch<span class="gradient-text">AI</span></h1>
+          <p class="brand-subtitle">Smart ATS Keyword & Semantic Job Alignment Analyzer</p>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <div id="service-status-pill" class="status-pill status-checking">
+          <span class="status-dot"></span>
+          <span id="service-status-text">Connecting to ML Service...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Quick Presets Bar -->
+    <section class="preset-section">
+      <div class="preset-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <span>Quick Test Presets:</span>
+      </div>
+      <div class="preset-chips">
+        <button type="button" class="preset-chip" data-preset="fullstack">
+          💻 Senior Full-Stack Engineer
+        </button>
+        <button type="button" class="preset-chip" data-preset="aiml">
+          🤖 AI / ML Data Scientist
+        </button>
+        <button type="button" class="preset-chip" data-preset="devops">
+          ☁️ Cloud & DevOps Architect
+        </button>
+        <button type="button" class="preset-chip chip-clear" id="btn-clear-all">
+          ✕ Clear All
+        </button>
+      </div>
+    </section>
+
+    <!-- Main Input Section: Two Columns -->
+    <main class="inputs-grid">
+      <!-- Resume Card -->
+      <section class="card input-card" id="card-resume">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-badge badge-indigo">1</div>
+            <h2>Your Resume</h2>
+          </div>
+          <div class="tab-group">
+            <button type="button" class="tab-btn active" data-tab="upload" id="tab-upload-btn">Upload File</button>
+            <button type="button" class="tab-btn" data-tab="paste" id="tab-paste-btn">Paste Text</button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- Upload Tab Content -->
+          <div class="tab-content active" id="tab-upload">
+            <div class="dropzone" id="resume-dropzone">
+              <input type="file" id="resume-file-input" accept=".pdf,.txt,.docx,.doc" class="file-input-hidden">
+              <div class="dropzone-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </div>
+              <p class="dropzone-primary">Drag & drop your resume or <span class="browse-link">Browse</span></p>
+              <p class="dropzone-secondary">Supports PDF and TXT documents</p>
+              <div id="file-info-badge" class="file-info-badge hidden">
+                <span class="file-name" id="uploaded-file-name">filename.pdf</span>
+                <span class="file-remove" id="btn-remove-file" title="Remove file">✕</span>
+              </div>
+            </div>
+            <div class="upload-preview-container">
+              <div class="preview-header">
+                <span>Extracted Text Preview</span>
+                <span class="preview-meta" id="resume-upload-meta">0 words</span>
+              </div>
+              <textarea id="resume-upload-preview" class="textarea-small" placeholder="Uploaded document text will appear here. You can also edit it before analyzing..."></textarea>
+            </div>
+          </div>
+
+          <!-- Paste Tab Content -->
+          <div class="tab-content" id="tab-paste">
+            <textarea id="resume-text-input" class="main-textarea" placeholder="Paste your complete resume text here (Summary, Skills, Work Experience, Education, Projects)..."></textarea>
+            <div class="textarea-footer">
+              <span id="resume-word-count">0 words</span>
+              <button type="button" class="link-btn" id="btn-sample-resume">Insert Sample Resume</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Job Description Card -->
+      <section class="card input-card" id="card-jd">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-badge badge-cyan">2</div>
+            <h2>Target Job Description</h2>
+          </div>
+          <span class="header-hint">Target Role Requirements</span>
+        </div>
+
+        <div class="card-body">
+          <textarea id="jd-text-input" class="main-textarea jd-textarea" placeholder="Paste the job description, required qualifications, key responsibilities, and technical stack here..."></textarea>
+          <div class="textarea-footer">
+            <span id="jd-word-count">0 words</span>
+            <button type="button" class="link-btn" id="btn-sample-jd">Insert Sample Job Description</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Action Section -->
+    <section class="action-section">
+      <button type="button" id="btn-analyze" class="btn-primary-large">
+        <span class="btn-glow"></span>
+        <svg class="btn-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        <span class="btn-text">Analyze Match & ATS Gaps</span>
+      </button>
+      <p class="action-hint">Uses hybrid semantic embeddings + ATS keyword extraction across 6 technical domains</p>
+    </section>
+
+    <!-- Loading State Stepper Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+      <div class="loading-card">
+        <div class="spinner-ring"></div>
+        <h3 id="loading-step-title">Analyzing Resume...</h3>
+        <p id="loading-step-desc">Extracting technical keywords and section data</p>
+        <div class="stepper-track">
+          <div class="stepper-progress" id="stepper-progress-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Section (Initially Hidden) -->
+    <section id="results-section" class="results-container hidden">
+      <!-- Section Anchor Title -->
+      <div class="results-header">
+        <div>
+          <h2 class="results-title">Analysis Results & ATS Match Report</h2>
+          <p class="results-subtitle">Detailed breakdown of semantic alignment, keyword density, and optimization recommendations</p>
+        </div>
+        <div class="results-actions">
+          <button type="button" class="btn-secondary" id="btn-copy-summary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copy Summary
+          </button>
+          <button type="button" class="btn-secondary" id="btn-print-report">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Export / Print Report
+          </button>
+        </div>
+      </div>
+
+      <!-- Top Row: Overall Score & Sub-scores -->
+      <div class="results-grid-top">
+        <!-- Main Circular Score Card -->
+        <div class="card score-hero-card">
+          <div class="score-circle-wrapper">
+            <svg class="score-circle-svg" viewBox="0 0 180 180">
+              <circle class="score-circle-bg" cx="90" cy="90" r="74"></circle>
+              <circle id="score-circle-fill" class="score-circle-fill" cx="90" cy="90" r="74"></circle>
+            </svg>
+            <div class="score-circle-content">
+              <span id="final-score-value" class="score-number">--</span>
+              <span class="score-suffix">%</span>
+              <span class="score-label">MATCH SCORE</span>
+            </div>
+          </div>
+          <div class="score-verdict-group">
+            <div id="score-verdict-badge" class="verdict-badge badge-neutral">Ready to Analyze</div>
+            <p id="score-verdict-summary" class="verdict-summary">Provide both a resume and job description to evaluate alignment.</p>
+          </div>
+        </div>
+
+        <!-- 4 Sub-metrics Breakdown Grid -->
+        <div class="breakdown-grid">
+          <!-- Metric 1: Semantic -->
+          <div class="card metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Semantic Context</span>
+              <span id="metric-semantic-val" class="metric-val">--%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div id="bar-semantic" class="progress-bar-fill fill-indigo" style="width: 0%"></div>
+            </div>
+            <p class="metric-desc">Overall contextual meaning and language alignment</p>
+          </div>
+
+          <!-- Metric 2: Keyword Overlap -->
+          <div class="card metric-card">
+            <div class="metric-header">
+              <span class="metric-title">ATS Keyword Overlap</span>
+              <span id="metric-keyword-val" class="metric-val">--%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div id="bar-keyword" class="progress-bar-fill fill-cyan" style="width: 0%"></div>
+            </div>
+            <p class="metric-desc">Match rate of technical skills found in Job Description</p>
+          </div>
+
+          <!-- Metric 3: Skills Section Alignment -->
+          <div class="card metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Skills Section Depth</span>
+              <span id="metric-skills-val" class="metric-val">--%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div id="bar-skills" class="progress-bar-fill fill-emerald" style="width: 0%"></div>
+            </div>
+            <p class="metric-desc">Alignment of technical competencies and tool proficiencies</p>
+          </div>
+
+          <!-- Metric 4: Experience Alignment -->
+          <div class="card metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Experience Relevance</span>
+              <span id="metric-exp-val" class="metric-val">--%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div id="bar-exp" class="progress-bar-fill fill-violet" style="width: 0%"></div>
+            </div>
+            <p class="metric-desc">Correlation between professional roles and target requirements</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle Row: ATS Keyword Analysis (Matched vs Missing) -->
+      <div class="results-grid-middle">
+        <!-- Matched Skills -->
+        <div class="card keyword-card">
+          <div class="keyword-card-header">
+            <div class="keyword-title-wrap">
+              <span class="status-indicator-dot dot-emerald"></span>
+              <h3>Matched Keywords (<span id="matched-count">0</span>)</h3>
+            </div>
+            <span class="badge-pill pill-emerald">Found in Resume</span>
+          </div>
+          <div id="matched-keywords-container" class="tags-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Missing Skills -->
+        <div class="card keyword-card">
+          <div class="keyword-card-header">
+            <div class="keyword-title-wrap">
+              <span class="status-indicator-dot dot-rose"></span>
+              <h3>Missing ATS Keywords (<span id="missing-count">0</span>)</h3>
+            </div>
+            <span class="badge-pill pill-rose">Target in JD</span>
+          </div>
+          <div id="missing-keywords-container" class="tags-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Row: Recommendations & Section Quality -->
+      <div class="results-grid-bottom">
+        <!-- Actionable AI Recommendations -->
+        <div class="card recommendations-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <div class="icon-bubble bubble-amber">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <h3>Actionable Optimization Tips</h3>
+            </div>
+            <span class="badge-pill pill-amber">Tailored Advice</span>
+          </div>
+          <div class="card-body">
+            <ul id="recommendations-list" class="recommendations-list">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- Resume Section Structure Health Check -->
+        <div class="card structure-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <div class="icon-bubble bubble-indigo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              </div>
+              <h3>Resume Structure Audit</h3>
+            </div>
+            <span class="badge-pill pill-indigo">ATS Parser Friendly</span>
+          </div>
+          <div class="card-body">
+            <div class="structure-checklist" id="structure-checklist">
+              <div class="checklist-item" id="chk-summary">
+                <span class="check-icon">✓</span>
+                <div class="check-info">
+                  <span class="check-name">Professional Summary</span>
+                  <span class="check-status" id="status-summary">Detected</span>
+                </div>
+              </div>
+              <div class="checklist-item" id="chk-skills">
+                <span class="check-icon">✓</span>
+                <div class="check-info">
+                  <span class="check-name">Technical Skills Section</span>
+                  <span class="check-status" id="status-skills">Detected</span>
+                </div>
+              </div>
+              <div class="checklist-item" id="chk-experience">
+                <span class="check-icon">✓</span>
+                <div class="check-info">
+                  <span class="check-name">Work Experience</span>
+                  <span class="check-status" id="status-experience">Detected</span>
+                </div>
+              </div>
+              <div class="checklist-item" id="chk-education">
+                <span class="check-icon">✓</span>
+                <div class="check-info">
+                  <span class="check-name">Education & Qualifications</span>
+                  <span class="check-status" id="status-education">Detected</span>
+                </div>
+              </div>
+              <div class="checklist-item" id="chk-projects">
+                <span class="check-icon">✓</span>
+                <div class="check-info">
+                  <span class="check-name">Key Projects / Portfolios</span>
+                  <span class="check-status" id="status-projects">Detected</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Resume–Job Match Analyzer • Powered by FastAPI & NLP Machine Learning</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
